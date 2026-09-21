@@ -32,6 +32,13 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+def include_objects(object, name, type_, *args):
+    # Tells alembic to exclude and never touch fk_qr_folder_link
+    if type_ == "foreign_key_constraint" and name == "fk_qr_folder_link":
+        return False
+    return True
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -49,6 +56,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_objects,
     )
 
     with context.begin_transaction():
@@ -57,7 +65,11 @@ def run_migrations_offline() -> None:
 
 def do_run_migrations_online(connection) -> None:
     """A helper function to run migrations in a synchronous context."""
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_objects,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

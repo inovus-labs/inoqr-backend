@@ -17,7 +17,7 @@ class User(Base):
         ENUM(AuthProvider, name="auth_provider"), nullable=False
     )
     provider_user_id: Mapped[str] = mapped_column(TEXT, nullable=False)
-    email: Mapped[str] = mapped_column(TEXT, nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(TEXT, nullable=False)
     image_url: Mapped[str] = mapped_column(TEXT, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -26,6 +26,7 @@ class User(Base):
     )
     __table_args__ = (
         UniqueConstraint("provider", "provider_user_id", name="uq_provider"),
+        UniqueConstraint("provider", "email", name="uq_provider_email"),
     )
 
     sessions: Mapped[list["UserSession"]] = relationship(

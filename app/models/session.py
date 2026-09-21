@@ -27,11 +27,6 @@ class UserSession(Base):
     expires_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False
     )
-    last_used_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=func.current_timestamp(),
-    )
     __table_args__ = (
         CheckConstraint("expires_at > created_at", name="chk_session_expiry"),
     )

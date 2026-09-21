@@ -7,13 +7,15 @@ import asyncio
 
 async def cleanup_expired_sessions(db: AsyncSession):
     stmt = delete(UserSession).where(UserSession.expires_at <= func.current_timestamp())
-    await db.execute(stmt)
+    result = await db.execute(stmt)
+    return result.rowcount
 
 
 async def main():
     async with AsyncSessionLocal() as db:
-        result = await cleanup_expired_sessions(db)
-        print(f"Deleted {result.rowcount} expired sessions")
+        deleted_count = await cleanup_expired_sessions(db)
+        if deleted_count > 0:
+            print(f"Deleted {deleted_count} expired sessions")
         await db.commit()
 
 
