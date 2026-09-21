@@ -1,7 +1,7 @@
 from app.models.user import User
 from app.models.session import UserSession
 from fastapi import Cookie, HTTPException, Depends
-from app.config import SESSION_COOKIE_NAME
+from app.config import config
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update
 from app.database import get_db
@@ -11,7 +11,7 @@ import hashlib
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
-    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
+    session_token: str | None = Cookie(default=None, alias=config.SESSION_COOKIE_NAME),
 ) -> User:
     if session_token is None:
         raise HTTPException(

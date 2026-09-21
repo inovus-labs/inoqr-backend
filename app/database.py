@@ -1,14 +1,14 @@
 from sqlalchemy import URL
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from app.config import DB_DRIVER, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME
+from app.config import config
 
 DATABASE_URL = URL.create(
-    drivername=DB_DRIVER,
-    username=DB_USER,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=DB_PORT,
-    database=DB_NAME,
+    drivername=config.DB_DRIVER,
+    username=config.DB_USER,
+    password=config.DB_PASSWORD,
+    host=config.DB_HOST,
+    port=config.DB_PORT,
+    database=config.DB_NAME,
 )
 
 engine = create_async_engine(DATABASE_URL, echo=False, pool_size=5, max_overflow=10)

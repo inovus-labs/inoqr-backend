@@ -10,5 +10,5 @@ def validate_return_to(return_to: str) -> str:
 
 def redirect_to_frontend(return_to: str, status_code: int = 302):
     return RedirectResponse(
-        url=f"{config('FRONTEND_URL')}{return_to}", status_code=status_code
+        url=f"{config.FRONTEND_URL}{return_to}", status_code=status_code
     )
