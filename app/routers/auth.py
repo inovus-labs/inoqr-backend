@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends, Query, Cookie
 from authlib.integrations.base_client.errors import MismatchingStateError, OAuthError
-from app.config import SESSION_COOKIE_NAME
+from app.config import config
 from app.auth.oauth import oauth
 from app.auth.dependencies import get_current_user
 from app.schemas.user import UserEnvelope
@@ -20,7 +20,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/auth")
+router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
 
 @router.get("/login/google/", status_code=302)
@@ -52,7 +52,7 @@ async def google_auth_callback(request: Request, db: AsyncSession = Depends(get_
 
     redirect = redirect_to_frontend(request.session.pop("return_to", "/"))
     redirect.set_cookie(
-        key=SESSION_COOKIE_NAME,
+        key=config.SESSION_COOKIE_NAME,
         value=session_token,
         secure=True,
         httponly=True,
@@ -108,7 +108,7 @@ async def github_auth_callback(request: Request, db: AsyncSession = Depends(get_
 
     redirect = redirect_to_frontend(request.session.pop("return_to", "/"))
     redirect.set_cookie(
-        key=SESSION_COOKIE_NAME,
+        key=config.SESSION_COOKIE_NAME,
         value=session_token,
         secure=True,
         httponly=True,
@@ -134,12 +134,12 @@ async def get_me(current_user: User = Depends(get_current_user)):
 @router.post("/logout/", status_code=303)
 async def logout(
     db: AsyncSession = Depends(get_db),
-    session_token: str | None = Cookie(default=None, alias=SESSION_COOKIE_NAME),
+    session_token: str | None = Cookie(default=None, alias=config.SESSION_COOKIE_NAME),
 ):
     if session_token is not None:
         await discard_session(session_token, db)
     redirect = redirect_to_frontend("/", status_code=303)
-    redirect.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    redirect.delete_cookie(key=config.SESSION_COOKIE_NAME, path="/")
     return redirect
 
 
@@ -149,5 +149,5 @@ async def delete_account(
 ):
     await delete_user(current_user, db)
     redirect = redirect_to_frontend("/", status_code=303)
-    redirect.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    redirect.delete_cookie(key=config.SESSION_COOKIE_NAME, path="/")
     return redirect
