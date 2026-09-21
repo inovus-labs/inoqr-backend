@@ -15,7 +15,7 @@ async def fhttp_exception_handler(_: Request, exc: HTTPException):
         message = exc.detail.get("message", str(exc.detail))
     else:
         code = ErrorCode.HTTP_ERROR
-        message = message = str(exc.detail)
+        message = str(exc.detail)
     response = ErrorResponse(error=ErrorDetail(code=code, message=message))
     return JSONResponse(
         status_code=exc.status_code, content=response.model_dump(), headers=exc.headers
@@ -36,11 +36,16 @@ async def shttp_exception_handler(_: Request, exc: StareletteHttpException):
 
 
 async def validation_exception_handler(_: Request, exc: RequestValidationError):
+    errors_dict={}
+    for error in exc.errors():
+        loc=error["loc"]
+        errors_dict[str(loc[-1])] = error["msg"]
+    
     response = ErrorResponse(
         error=ErrorDetail(
             code=ErrorCode.VALIDATION_ERROR,
             message="Request Validation Failed",
-            details=exc.errors,
+            details=errors_dict,
         )
     )
     return JSONResponse(
