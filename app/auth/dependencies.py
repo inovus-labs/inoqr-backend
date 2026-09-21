@@ -21,19 +21,15 @@ async def get_current_user(
                 "message": "Authentication required",
             },
         )
-    stmt = select(UserSession).where(
-        UserSession.session_token_hash
-        == hashlib.sha256(session_token.encode("utf-8")).hexdigest(),
-        UserSession.expires_at > func.current_timestamp(),
-    )
-    result = await db.execute(stmt)
-    session: UserSession = result.scalar_one_or_none()
-    if session is None:
-        raise HTTPException(
-            status_code=401,
-            detail={"code": ErrorCode.UNAUTHORIZED, "message": "Invalid session"},
+    stmt = (
+        select(User)
+        .join(User.sessions)
+        .where(
+            UserSession.session_token_hash
+            == hashlib.sha256(session_token.encode("utf-8")).hexdigest(),
+            UserSession.expires_at > func.current_timestamp(),
         )
-    stmt = select(User).where(User.id == session.user_id)
+    )
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     if user is None:
@@ -44,10 +40,4 @@ async def get_current_user(
                 "message": "Invalid session",
             },
         )
-    stmt = (
-        update(UserSession)
-        .where(UserSession.id == session.id)
-        .values(last_used_at=func.current_timestamp())
-    )
-    await db.execute(stmt)
     return user
